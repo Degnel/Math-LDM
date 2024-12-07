@@ -41,7 +41,7 @@ class TransformerLM(nn.Module):
     
     def predict(self, input, max_length=100):
         tokenizer = Tokenizer()
-        input_ids = torch.tensor([tokenizer.encode(input)]).to(self.device)
+        input_ids = torch.tensor(tokenizer.encode(input)[0]).unsqueeze(0)
         with torch.no_grad():
             for _ in range(max_length):
                 outputs = self.forward(input_ids)
@@ -50,3 +50,7 @@ class TransformerLM(nn.Module):
                 if predictions[-1] == tokenizer.vocab[PAD_TOKEN]:
                     break
         return tokenizer.decode(input_ids.squeeze())
+    
+    def load_checkpoint(self, checkpoint_path="./checkpoints/llm_model.pth"):
+        checkpoint = torch.load(checkpoint_path, weights_only=True)
+        self.load_state_dict(checkpoint)

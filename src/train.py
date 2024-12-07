@@ -39,6 +39,7 @@ def main():
     # Entraînement
     for epoch in range(100):
         loss = train(model, dataloader, optimizer, criterion, device)
+        torch.save(model.state_dict(), "./checkpoints/llm_model.pth")
         print(f"Epoch {epoch + 1}, Loss: {loss}")
 
 if __name__ == "__main__":
