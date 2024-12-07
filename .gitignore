@@ -1,6 +1,4 @@
 data/*
-!data/
 checkpoints/*
-!checkpoints/
 .vscode
 __pycache__
