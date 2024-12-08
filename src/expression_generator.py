@@ -4,6 +4,7 @@ import random
 import math
 from constants import NUMBER_RANGE, OPERATORS, EXPONENTS
 
+
 class ExpressionGenerator:
     def __init__(self, max_depth=2, max_exponent=2):
         self.max_depth = max_depth
@@ -32,7 +33,7 @@ class ExpressionGenerator:
 
         if choice < 0.5:
             base = self.generate_number()
-            exp = random.choice(EXPONENTS[:self.max_exponent])
+            exp = random.choice(EXPONENTS[: self.max_exponent])
             return f"({base}**{exp})"
 
         if choice < 0.75:
@@ -42,7 +43,7 @@ class ExpressionGenerator:
             return f"({left}{operator}{right})"
 
         left = self.generate_number()
-        operator = random.choice(['*', '/'])
+        operator = random.choice(["*", "/"])
         right = self.generate_number()
         return f"({left}{operator}{right})"
 

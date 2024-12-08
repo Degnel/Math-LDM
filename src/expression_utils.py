@@ -1,5 +1,6 @@
 import math
 
+
 def evaluate_expression(expression):
     """
     Évalue une expression mathématique donnée.
@@ -17,12 +18,13 @@ def evaluate_expression(expression):
             "sin": math.sin,
             "cos": math.cos,
             "tan": math.tan,
-            "log": math.log10
+            "log": math.log10,
         }
         # Utiliser eval avec un environnement sécurisé
         return eval(expression, {"__builtins__": None}, allowed_locals)
     except Exception as e:
         raise ValueError(f"Invalid expression: {expression}. Error: {str(e)}")
+
 
 def validate_expression(expression):
     """

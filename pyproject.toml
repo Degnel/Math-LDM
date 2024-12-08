@@ -7,4 +7,22 @@ requires-python = ">=3.11"
 dependencies = [
     "ruff>=0.8.2",
     "torch>=2.5.1",
+    "transformers>=4.47.0",
+]
+
+[tool.ruff]
+select = [
+    "E",
+    "F",
+    "C",
+    "I",
+    "N",
+]
+
+fixable = ["I"]
+
+line-length = 88
+
+extend-exclude = [
+    ".venv/",
 ]
