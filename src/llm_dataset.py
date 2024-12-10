@@ -2,6 +2,7 @@ import os
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 import torch
+
 from dataset import MathExpressionDataset
 from tokenizer import Tokenizer
 
@@ -11,7 +12,7 @@ from tokenizer import Tokenizer
 class LLMDataset(MathExpressionDataset):
     def __init__(
         self,
-        num_samples=10000,
+        num_samples=100000,
         file_path="./data/dataset.txt",
         force_recreate=False,
         max_length=10,
@@ -23,7 +24,7 @@ class LLMDataset(MathExpressionDataset):
 
     def _create_shifted_dataset(self, tokenizer: Tokenizer, max_length: int):
         dataset = []
-        for sample in self.tokens[:1000]:
+        for sample in self.tokens:
             equal_index = (
                 (sample == tokenizer.equal_token_id).nonzero(as_tuple=True)[0].item()
             )

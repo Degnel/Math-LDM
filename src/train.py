@@ -1,10 +1,12 @@
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from model import TransformerLM
-from llm_dataset import LLMDataset
-from constants import PAD_TOKEN
 from transformers import get_scheduler
+
+from constants import PAD_TOKEN
+from llm_dataset import LLMDataset
+from model import TransformerLM
+
 
 def create_attention_mask(encoded_batch):
     return torch.tensor(
@@ -13,7 +15,7 @@ def create_attention_mask(encoded_batch):
             for sequence in encoded_batch
         ],
         dtype=torch.bool,
-    ).swapaxes(0, 1)
+    )
 
 
 def train(model, dataloader, optimizer, criterion, device):
@@ -31,6 +33,7 @@ def train(model, dataloader, optimizer, criterion, device):
 
     return total_loss / len(dataloader)
 
+
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = TransformerLM().to(device)
@@ -39,10 +42,11 @@ def main():
     optimizer = optim.AdamW(model.parameters(), lr=0.0001)
     criterion = torch.nn.CrossEntropyLoss()
 
-    for epoch in range(100):
+    for epoch in range(50):
         loss = train(model, dataloader, optimizer, criterion, device)
         torch.save(model.state_dict(), "./checkpoints/llm_model.pth")
         print(f"Epoch {epoch + 1}, Loss: {loss}")
+
 
 if __name__ == "__main__":
     main()

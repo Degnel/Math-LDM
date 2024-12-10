@@ -1,6 +1,7 @@
-import random
-import torch
 import os
+import random
+
+import torch
 
 
 class MathExpressionDataset(torch.utils.data.Dataset):

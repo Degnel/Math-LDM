@@ -1,7 +1,74 @@
+# import torch
+# import torch.nn as nn
+# from transformers import GPT2Config, GPT2LMHeadModel
+
+# from constants import PAD_TOKEN, VOCAB_SIZE
+# from tokenizer import Tokenizer
+
+
+# class TransformerLM(nn.Module):
+#     def __init__(self, vocab_size=VOCAB_SIZE, d_model=768, nhead=12, num_layers=12, dim_feedforward=3072, dropout=0.1):
+#         super(TransformerLM, self).__init__()
+
+#         # Configuration du modèle Hugging Face
+#         self.config = GPT2Config(
+#             vocab_size=vocab_size,
+#             n_positions=10,
+#             n_embd=d_model,
+#             n_layer=num_layers,
+#             n_head=nhead,
+#             resid_pdrop=dropout,
+#             embd_pdrop=dropout,
+#         )
+
+#         # Initialisation d'un modèle Hugging Face sans poids préentraînés
+#         self.model = GPT2LMHeadModel(self.config)
+
+#     def forward(self, input_ids, attention_mask=None):
+#         """
+#         Passe avant du modèle
+#         Args:
+#             input_ids (Tensor): Séquences d'entrée (batch_size, seq_len).
+#             attention_mask (Tensor, optionnel): Masque d'attention (batch_size, seq_len).
+#         """
+#         outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
+#         return outputs.logits  # Retourne les logits pour le calcul de la loss
+
+#     def predict(self, input_text, max_length=100):
+#         """
+#         Génération d'une séquence
+#         Args:
+#             input_text (str): Texte d'entrée.
+#             max_length (int): Longueur maximale de la génération.
+#         """
+#         tokenizer = Tokenizer()
+#         input_ids = torch.tensor(tokenizer.encode(input_text)[0]).unsqueeze(0)
+
+#         with torch.no_grad():
+#             for _ in range(max_length):
+#                 outputs = self.forward(input_ids)
+#                 predictions = outputs.argmax(-1)[:, -1]  # Prédiction du prochain token
+#                 input_ids = torch.cat((input_ids, predictions.unsqueeze(-1)), dim=-1)
+
+#                 if predictions[-1] == tokenizer.vocab[PAD_TOKEN]:
+#                     break
+
+#         return tokenizer.decode(input_ids.squeeze())
+
+#     def load_checkpoint(self, checkpoint_path="./checkpoints/llm_model.pth"):
+#         """
+#         Chargement des poids depuis un checkpoint.
+#         """
+#         checkpoint = torch.load(checkpoint_path)
+#         self.model.load_state_dict(checkpoint)
+
+import math
+
 import torch
 import torch.nn as nn
-from constants import VOCAB_SIZE, PAD_TOKEN
-import math
+from torch.nn import Transformer
+
+from constants import PAD_TOKEN, VOCAB_SIZE
 from tokenizer import Tokenizer
 
 
@@ -25,14 +92,27 @@ class PositionalEncoding(nn.Module):
 
 class TransformerLM(nn.Module):
     def __init__(
-        self, vocab_size=VOCAB_SIZE, d_model=20, nhead=5, num_layers=10, dropout=0
+        self,
+        vocab_size=VOCAB_SIZE,
+        d_model=6,
+        nhead=1,
+        num_layers=1,
+        dim_feedforward=24,
+        dropout=0.1,
     ):
         super(TransformerLM, self).__init__()
 
         self.embedding = nn.Embedding(vocab_size, d_model)
         self.pos_encoder = PositionalEncoding(d_model)
-        self.transformer = nn.Transformer(
-            d_model, nhead, num_layers, num_layers, dropout=dropout
+        decoder_layer = nn.TransformerDecoderLayer(
+            d_model=d_model,
+            nhead=nhead,
+            dim_feedforward=dim_feedforward,
+            dropout=dropout,
+            batch_first=True,
+        )
+        self.transformer_decoder = nn.TransformerDecoder(
+            decoder_layer, num_layers=num_layers
         )
         self.fc_out = nn.Linear(d_model, vocab_size)
         self.d_model = d_model
@@ -40,11 +120,17 @@ class TransformerLM(nn.Module):
     def forward(self, src, attention_mask=None):
         src = self.embedding(src) * math.sqrt(self.d_model)
         src = self.pos_encoder(src)
+        seq_len = src.size(1)
+        causal_mask = Transformer.generate_square_subsequent_mask(seq_len)
         if attention_mask is not None:
             attention_mask = attention_mask.to(dtype=torch.bool)
-        else:
-            attention_mask = None
-        output = self.transformer(src, src, src_key_padding_mask=attention_mask)
+        output = self.transformer_decoder(
+            tgt=src,
+            memory=torch.zeros_like(src),
+            tgt_mask=causal_mask,
+            tgt_key_padding_mask=attention_mask,
+        )
+
         output = self.fc_out(output)
         return output
 

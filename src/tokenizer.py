@@ -1,4 +1,5 @@
 import torch
+
 from constants import ALPHABET, PAD_TOKEN
 
 

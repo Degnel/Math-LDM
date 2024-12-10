@@ -1,8 +1,9 @@
 # expression_generator.py
 
-import random
 import math
-from constants import NUMBER_RANGE, OPERATORS, EXPONENTS
+import random
+
+from constants import EXPONENTS, NUMBER_RANGE, OPERATORS
 
 
 class ExpressionGenerator:
