@@ -8,8 +8,7 @@ from tokenizer import Tokenizer
 import torch.nn.utils.rnn as rnn_utils
 from torch.nn import functional as F
 
-# Faire en sorte que comme MathExpressionDataset, LLDDataset enregistre le fichier une fois le calcul effectué
-
+# Faire en sorte que comme MathExpressionDataset, LDMDataset enregistre le fichier une fois le calcul effectué
 
 class LDMDataset(MathExpressionDataset):
     def __init__(
