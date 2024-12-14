@@ -15,7 +15,7 @@ class LLMDataset(MathExpressionDataset):
         num_samples=100000,
         file_path="./data/dataset.txt",
         force_recreate=False,
-        max_length=10,
+        max_length=16,
     ):
         super().__init__(num_samples, file_path, force_recreate)
         tokenizer = Tokenizer()

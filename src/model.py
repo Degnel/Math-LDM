@@ -73,7 +73,7 @@ from tokenizer import Tokenizer
 
 
 class PositionalEncoding(nn.Module):
-    def __init__(self, d_model, max_len=5000):
+    def __init__(self, d_model, max_len=16):
         super(PositionalEncoding, self).__init__()
         pe = torch.zeros(max_len, d_model)
         position = torch.arange(0, max_len).unsqueeze(1).float()
@@ -95,14 +95,16 @@ class TransformerLM(nn.Module):
         self,
         vocab_size=VOCAB_SIZE,
         d_model=6,
-        nhead=1,
-        num_layers=1,
+        nhead=3,
+        num_layers=5,
         dim_feedforward=24,
         dropout=0.1,
     ):
         super(TransformerLM, self).__init__()
 
         self.embedding = nn.Embedding(vocab_size, d_model)
+        self.embeddings = nn.Parameter(torch.empty(VOCAB_SIZE, d_model))
+        nn.init.xavier_uniform_(self.embeddings)
         self.pos_encoder = PositionalEncoding(d_model)
         decoder_layer = nn.TransformerDecoderLayer(
             d_model=d_model,
@@ -117,16 +119,15 @@ class TransformerLM(nn.Module):
         self.fc_out = nn.Linear(d_model, vocab_size)
         self.d_model = d_model
 
-    def forward(self, src, attention_mask=None):
-        src = self.embedding(src) * math.sqrt(self.d_model)
-        src = self.pos_encoder(src)
-        seq_len = src.size(1)
+    def forward(self, tgt, attention_mask=None):
+        tgt = torch.matmul(tgt, self.embeddings) * math.sqrt(self.d_model)
+        # tgt = self.embedding(tgt) * math.sqrt(self.d_model)
+        tgt = self.pos_encoder(tgt)
+        seq_len = tgt.size(1)
         causal_mask = Transformer.generate_square_subsequent_mask(seq_len)
-        if attention_mask is not None:
-            attention_mask = attention_mask.to(dtype=torch.bool)
         output = self.transformer_decoder(
-            tgt=src,
-            memory=torch.zeros_like(src),
+            tgt=tgt,
+            memory=torch.zeros_like(tgt),
             tgt_mask=causal_mask,
             tgt_key_padding_mask=attention_mask,
         )
